@@ -17,7 +17,7 @@ public class Main {
 		Type B = new Type("B", 15, 0.05);
 		Type Ar = new Type("Ar", 15, 0.03);
 		Type Br = new Type("Br", 15, 0.05);
-		Interaction rx1 = new Interaction(A, B, Ar, Br, 5, 5);
+		Interaction rx1 = new Interaction(A, B, Ar, Br, 0.5, 5);
 		m.addType(A);
 		m.addType(B);
 		m.addType(Ar);

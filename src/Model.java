@@ -1,11 +1,10 @@
 import java.util.*;
-import java.util.ArrayList;
 
 public class Model {
 	List<Type> Types = new ArrayList();
 	List<Particle> Particles = new ArrayList();
 	List<Interaction> Interactions = new ArrayList();
-	
+	static Random rand = new Random();
 	double x0, x1, y0, y1, z0, z1;
 	
 	Model (double x0, double x1, double y0, double y1, double z0, double z1){
@@ -43,7 +42,11 @@ public class Model {
 	
 	Interaction findInteraction(Particle Part1, Particle Part2) {
 		Type t1 = Part1.type;
-		Type t2 = Part2.type;
+		Type t2 = null;
+		
+		if (Part2 != null) {
+			t2 = Part2.type;
+		}
 		for (Interaction rx : Interactions) {
 			if ((rx.A == t1 && rx.B == t2) || (rx.A == t2 && rx.B == t1)){
 				return rx;
@@ -57,9 +60,39 @@ public class Model {
 			return dist;
 	}
 	
+	void applyRxn(Interaction rxn, Particle p1, Particle p2) {
+		double randomNum = rand.nextDouble();
+		double p2x, p2y, p2z;
+		if (rxn.rate > randomNum) {
+			removeParticle(p1);
+			if(p2 != null) {
+				p2x = p2.x;
+				p2y = p2.y;
+				p2z = p2.z;
+				removeParticle(p2);
+			} 
+			else {
+				p2x = p1.x;
+				p2y = p1.y;
+				p2z = p1.z;
+			}
+			if (rxn.Ar != null) {
+				addParticle(new Particle(rxn.Ar, p1.x, p1.y, p1.z)); //TODO: fix coords
+			}
+			if (rxn.Br != null) {
+				addParticle(new Particle(rxn.Br, p2x, p2y, p2z)); //TODO: fix coords
+			}
+		}
+	}
+	
 	void checkInteractions() {
 		for (int i = 0; i < Particles.size(); i++) {
 			Particle p1 = Particles.get(i);
+			Interaction singlerxn = findInteraction(p1, null);
+			if (singlerxn != null) {
+				applyRxn(singlerxn, p1, null);
+				continue;
+			}
 			for (int j = i + 1; j < Particles.size(); j++) {
 				Particle p2 = Particles.get(j);
 				Interaction rxn = findInteraction(p1, p2);
@@ -68,15 +101,8 @@ public class Model {
 					if (dist < rxn.dist) {
 						//System.out.println("Interaction p1 (" + p1.x + ", " + p1.y + ", " + p1.z + 
 						//") p2 (" + p2.x + ", " + p2.y + ", " + p2.z + ")");
-						removeParticle(p1);
-						removeParticle(p2);
-						if (rxn.Ar != null) {
-							addParticle(new Particle(rxn.Ar, p1.x, p1.y, p1.z)); //TODO: fix coords
-							System.out.println("Products: " + Particles);
-						}
-						else if (rxn.Br != null) {
-							addParticle(new Particle(rxn.Br, p2.x, p2.y, p2.z)); //TODO: fix coords
-						}
+						applyRxn(rxn, p1, p2);
+						System.out.println("Particles after rxn: " + Particles);
 					}
 				}
 			}
